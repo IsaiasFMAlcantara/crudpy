@@ -84,6 +84,31 @@ class Endereco:
         values = (self.documento, self.pais, self.estado, self.cidade, self.bairro, self.rua, self.numero_casa, self.observacao)
         inserir_dados(conn, sql, values)
 
+class SQLQueryExecutor:
+    def __init__(self, db_filename):
+        self.db_filename = db_filename
+
+    def execute_queries_from_file(self, query_file):
+        try:
+            conn = sqlite3.connect(self.db_filename)
+            cursor = conn.cursor()
+            with open(query_file, 'r') as file:
+                queries = file.read().split(';')
+            results = []
+            for query in queries:
+                query = query.strip()
+                if query:
+                    cursor.execute(query)
+                    result = cursor.fetchall()
+                    results.append(result)
+            conn.commit()
+            return results
+        except sqlite3.Error as e:
+            return None
+        finally:
+            if conn:
+                conn.close()
+
 def criar_conexao():
     try:
         conn = sqlite3.connect('poo/base.db')
@@ -115,6 +140,7 @@ def main():
         0 - Sair
         1 - Cadastrar Pessoa
         2 - Cadastrar Endereço
+        3 - Executar Consultas SQL a partir de um arquivo
         """)
         escolha = int(input('Escolha uma opção: '))
         if escolha == 0:
@@ -147,6 +173,13 @@ def main():
 
             endereco = Endereco(vdoc, vpais, vestado, vcidade, vbairro, vrua, vnumero_casa, vobservacao)
             endereco.salvar_db(conn)
+        elif escolha == 3:
+            query_executor = SQLQueryExecutor('poo/base.db')
+            results = query_executor.execute_queries_from_file('poo/query.txt')
+            if results is not None:
+                for result in results:
+                    for row in result:
+                        print(row)
         else:
             print('Essa opção não existe')
 

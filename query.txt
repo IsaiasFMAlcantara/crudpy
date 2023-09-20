@@ -1,0 +1,18 @@
+SELECT
+p.idpessoa,
+p.nome,
+p.sobrenome ,
+p.idade,
+CASE
+	WHEN p.genero = 1 THEN "Masculino"
+	ELSE "Feminino"
+END as genero,
+p.documento,
+CASE
+	WHEN p.tipo = 1 THEN "cpf"
+	ELSE "cnpj"
+END as tipo_documento,
+e.pais||', '||e.estado||', '||e.cidade||', '||e.bairro||', '||e.rua||', '||e.numero_casa||', '||e.observacao as endereco
+FROM pessoas p
+LEFT JOIN endereco e
+ON p.documento = e.documento;
